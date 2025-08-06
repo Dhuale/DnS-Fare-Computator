@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dns Fare Computator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Dns Fare Computator Design.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Fare Calculator</h2>
+
+    <label for="route"> 🛣️ Direction:</label>
+    <select id="route">
+      <option value="malolos-bulakan">Malolos to Bulakan</option>
+      <option value="bulakan-malolos">Bulakan to Malolos</option>
+    </select>
+
+    <label for="origin"> 🏡 Origin:</label>
+    <select id="origin"></select>
+
+    <label for="destination"> 📍 Destination:</label>
+    <select id="destination"></select>
+
+    <label for="fareType"> 💲 Fare Type:</label>
+    <select id="fareType">
+      <option value="regular">Regular</option>
+      <option value="discounted">Discounted (Student/Senior)</option>
+    </select>
+
+    <label for="payment"> 🧍 Passenger Payment:</label>
+    <select id="payment">
+      <option value="0">-- Select Payment --</option>
+      <option value="20">₱20</option>
+      <option value="50">₱50</option>
+      <option value="100">₱100</option>
+    </select>
+
+    <label for="passengers"> 🚶‍♂️ Number of Passengers:</label>
+      <input type="number" id="passengers" min="1" value="1" />
+
+
+    <button onclick="calculateFare()">Calculate Fare</button>
+
+    <div id="fareResult"></div>
+  </div>
+
+  <script>
+    const fareData = 
+    {
+      "malolos-bulakan": 
+      {
+        stops: 
+        [
+          "SAN JUAN/STO.ROSARIO", "ATLAG", "BAGNA", "PANASAHAN", "MATIMBO",
+          "MAMBOG", "PITPITAN", "SAN NICOLAS", "MAYSANTOL", "BAGUMBAYAN/SAN JOSE"
+        ],
+        fares: 
+        {
+          regular:   [13, 13, 13, 13, 15, 17, 19, 21, 23, 25],
+          discounted:[11, 11, 11, 11, 13, 15, 17, 19, 21, 23]
+        }
+      },
+      "bulakan-malolos": 
+      {
+        stops: 
+        [
+          "BAGUMBAYAN/SAN JOSE", "MAYSANTOL", "SAN NICOLAS", "PITPITAN",
+          "MAMBOG", "MATIMBO", "PANASAHAN", "BAGNA", "ATLAG", "SAN JUAN/STO.ROSARIO"
+        ],
+        fares: 
+        {
+          regular:   [13, 13, 13, 13, 15, 17, 19, 21, 23, 25],
+          discounted:[11, 11, 11, 11, 13, 15, 17, 19, 21, 23]
+        }
+      }
+    };
+
+    const routeSelect = document.getElementById("route");
+    const originSelect = document.getElementById("origin");
+    const destinationSelect = document.getElementById("destination");
+
+    function populateStops() 
+    {
+      const route = routeSelect.value;
+      const stops = fareData[route].stops;
+      
+      originSelect.innerHTML = '';
+      destinationSelect.innerHTML = '';
+      stops.forEach(stop => 
+      {
+        originSelect.innerHTML += `<option value="${stop}">${stop}</option>`;
+        destinationSelect.innerHTML += `<option value="${stop}">${stop}</option>`;
+      });
+    }
+
+function calculateFare() 
+{
+  const route = routeSelect.value;
+  const origin = originSelect.value;
+  const destination = destinationSelect.value;
+  const fareType = document.getElementById("fareType").value;
+  const payment = parseInt(document.getElementById("payment").value);
+  const passengers = parseInt(document.getElementById("passengers").value);
+  const resultDiv = document.getElementById("fareResult");
+
+  if (origin === destination) 
+  {
+    resultDiv.textContent = "Origin and destination cannot be the same.";
+    return;
+  }
+
+  if (payment === 0) 
+  {
+    resultDiv.textContent = "Please select a payment amount.";
+    return;
+  }
+
+  if (passengers < 1 || isNaN(passengers)) 
+  {
+    resultDiv.textContent = "Please enter a valid number of passengers.";
+    return;
+  }
+
+  const stops = fareData[route].stops;
+  const fares = fareData[route].fares[fareType];
+
+  const originIndex = stops.indexOf(origin);
+  const destinationIndex = stops.indexOf(destination);
+  const stopIndex = Math.max(originIndex, destinationIndex);
+
+  const farePerPerson = fares[stopIndex];
+  const totalFare = farePerPerson * passengers;
+  const totalPayment = payment * passengers;
+
+  if (totalPayment < totalFare) 
+  {
+    resultDiv.textContent = `Insufficient payment. Total fare for ${passengers} passenger(s) is ₱${totalFare}, but total payment is ₱${totalPayment}.`;
+  } else 
+  {
+    const change = totalPayment - totalFare;
+    resultDiv.textContent = `Fare per passenger: ₱${farePerPerson} | Passengers: ${passengers} | Total: ₱${totalFare} | Paid: ₱${totalPayment} | Change: ₱${change}`;
+  }
+}
+
+    routeSelect.addEventListener("change", populateStops);
+    populateStops();
+  </script>
+</body>
+
+</html>
